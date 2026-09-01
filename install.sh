@@ -113,12 +113,13 @@ if [ "$DO_REPOS" = 1 ]; then
   }
   mkdir -p "$HOME/.config" "$HOME/code/personal"
 
-  # nvim-config is PRIVATE, so this clone needs auth either way — do step 1 of
-  # the closing notes (ssh-keygen + gh auth login) first, or re-run just this
-  # part later with `./install.sh` again (cloning is skipped if already there).
+  # tmux-config and voice-loop are public -> HTTPS, so they clone with no auth
+  # on a fresh Mac. nvim-config is PRIVATE, so that one needs an SSH key: do
+  # step 1 of the closing notes first, or just re-run ./install.sh afterwards
+  # (repos already present are skipped, so re-running only fills the gaps).
   NVIM_REMOTE="git@github.com:shihongji/nvim-config.git"
-  TMUX_REMOTE=""        # TODO: set once the repo exists
-  VOICELOOP_REMOTE=""   # TODO: set once the repo exists
+  TMUX_REMOTE="https://github.com/shihongji/tmux-config.git"
+  VOICELOOP_REMOTE="https://github.com/shihongji/voice-loop.git"
 
   clone_or_report "$NVIM_REMOTE"      "$HOME/.config/nvim"                   "nvim"
   clone_or_report "$TMUX_REMOTE"      "$HOME/code/personal/tmux-config"      "tmux-config"
@@ -167,18 +168,21 @@ cat <<'EOF'
 
 Done. Remaining manual steps:
 
-1) SSH key for GitHub (personal):
-     ssh-keygen -t ed25519 -f ~/.ssh/id_personal_github -C "shihongji21@gmail.com"
-     gh auth login          # then: gh ssh-key add ~/.ssh/id_personal_github.pub
-   No ssh config is installed — on a personal machine github.com uses the
-   default key, so none is needed unless you add a second identity.
-
-2) voice-loop (TTS/STT) — needs its own install after cloning:
+1) voice-loop (TTS/STT) — cloned already, but needs its own install:
      cd ~/code/personal/voice-loop && ./install.sh
    That builds the Python venv (mlx-audio), downloads Kokoro-82M (~1.6GB),
    and wires the skhd hotkeys. Then grant skhd Accessibility permission:
    System Settings -> Privacy & Security -> Accessibility.
    Its Claude Code hooks are already in claude/settings.json.
+
+2) SSH key for GitHub — only needed to PUSH, or to clone nvim-config
+   (the one private repo; the rest cloned over HTTPS already):
+     ssh-keygen -t ed25519 -f ~/.ssh/id_personal_github -C "shihongji21@gmail.com"
+     gh auth login --hostname github.com
+     gh ssh-key add ~/.ssh/id_personal_github.pub
+   Then re-run ./install.sh to pick up nvim-config.
+   To push these repos, switch each remote to SSH:
+     git -C <dir> remote set-url origin git@github.com:shihongji/<repo>.git
 
 3) Open a new terminal, then check: rg, fd, bat, eza, fzf, starship, zoxide.
    Streaming check:  mpv "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
