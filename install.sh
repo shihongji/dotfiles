@@ -49,14 +49,30 @@ link() {
 
 # --- 1. Homebrew + packages --------------------------------------------------
 if [ "$DO_BREW" = 1 ]; then
-  if ! command -v brew >/dev/null 2>&1; then
+  # brew lives at /opt/homebrew on Apple Silicon and /usr/local on Intel.
+  # NEITHER is on macOS's default PATH, so `brew` can be installed and still
+  # be "command not found" in this shell — load its shellenv before deciding
+  # whether it needs installing, and again afterwards.
+  load_brew() {
+    command -v brew >/dev/null 2>&1 && return 0
+    for p in /opt/homebrew /usr/local; do
+      if [ -x "$p/bin/brew" ]; then eval "$("$p/bin/brew" shellenv)"; return 0; fi
+    done
+    return 1
+  }
+
+  if ! load_brew; then
     say "Installing Homebrew"
     run /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    # Apple Silicon puts brew outside the default PATH; make it usable now.
-    [ -x /opt/homebrew/bin/brew ] && eval "$(/opt/homebrew/bin/brew shellenv)"
+    load_brew || { echo "brew still not on PATH after install — open a new shell and re-run" >&2; exit 1; }
   fi
+  echo "    brew: $(command -v brew)"
+
   say "Installing packages from Brewfile (this takes a while)"
-  run brew bundle --file="$REPO/Brewfile"
+  # Not fatal: a single formula can fail (e.g. an unapproved third-party tap)
+  # without that being a reason to skip the symlinks and the rest of setup.
+  run brew bundle --file="$REPO/Brewfile" || \
+    warn "some formulae failed — re-run 'brew bundle --file=Brewfile' after resolving"
 fi
 
 # --- 2. symlinks -------------------------------------------------------------
