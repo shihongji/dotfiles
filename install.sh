@@ -119,23 +119,32 @@ if [ "$DO_REPOS" = 1 ]; then
   # A clone failure here must not abort the install (set -e): these repos are
   # private, so a machine without a key yet will fail this step and still want
   # the rest of the setup. Re-running after `gh auth login` picks them up.
-  clone_or_report() {  # $1 = url ("" if unset), $2 = dest, $3 = label
+  # Try HTTPS first (works with no auth if the repo is public), then fall back
+  # to SSH (needed while it is private). That way the same script works either
+  # way, and flipping a repo to public needs no edit here.
+  clone_or_report() {  # $1 = repo name ("" if unset), $2 = dest, $3 = label
     if [ -z "$1" ]; then warn "$3: no remote set yet — clone manually into $2"; return 0; fi
     if [ -d "$2/.git" ]; then echo "    ok   $2"; return 0; fi
-    if ! run git clone "$1" "$2"; then
-      warn "$3: clone failed (private repo — set up SSH auth, then re-run ./install.sh)"
+    if run git clone "https://github.com/shihongji/$1.git" "$2" 2>/dev/null; then
+      return 0
+    fi
+    echo "    (HTTPS failed — private repo; trying SSH)"
+    if ! run git clone "git@github.com:shihongji/$1.git" "$2"; then
+      warn "$3: clone failed. It is private and this Mac has no SSH key yet:"
+      warn "  ssh-keygen -t ed25519 -f ~/.ssh/id_personal_github -C \"shihongji21@gmail.com\""
+      warn "  gh auth login --hostname github.com"
+      warn "  gh ssh-key add ~/.ssh/id_personal_github.pub"
+      warn "  then re-run ./install.sh"
     fi
     return 0
   }
   mkdir -p "$HOME/.config" "$HOME/code/personal"
 
-  # tmux-config and voice-loop are public -> HTTPS, so they clone with no auth
-  # on a fresh Mac. nvim-config is PRIVATE, so that one needs an SSH key: do
-  # step 1 of the closing notes first, or just re-run ./install.sh afterwards
-  # (repos already present are skipped, so re-running only fills the gaps).
-  NVIM_REMOTE="git@github.com:shihongji/nvim-config.git"
-  TMUX_REMOTE="https://github.com/shihongji/tmux-config.git"
-  VOICELOOP_REMOTE="https://github.com/shihongji/voice-loop.git"
+  # Repo names only — clone_or_report picks HTTPS or SSH per repo. tmux-config
+  # and voice-loop are public; nvim-config is private and needs a key.
+  NVIM_REMOTE="nvim-config"
+  TMUX_REMOTE="tmux-config"
+  VOICELOOP_REMOTE="voice-loop"
 
   clone_or_report "$NVIM_REMOTE"      "$HOME/.config/nvim"                   "nvim"
   clone_or_report "$TMUX_REMOTE"      "$HOME/code/personal/tmux-config"      "tmux-config"
