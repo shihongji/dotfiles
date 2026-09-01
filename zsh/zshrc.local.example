@@ -1,0 +1,13 @@
+# Copy to ~/.zshrc.local — NEVER committed. Sourced last by ~/.zshrc.
+#
+# This is where anything machine-specific or employer-specific goes:
+# corp proxies, internal registries, cert bundles, VPN helpers, JAVA_HOME pins,
+# managed-tool PATH blocks (Rancher Desktop, Coursier, etc).
+#
+# Examples:
+
+# export JAVA_HOME=$(/usr/libexec/java_home -v 21)
+# export PATH="/usr/local/opt/postgresql@15/bin:$PATH"
+
+# Which Chrome profile `bm` reads bookmarks from (default: "Default").
+# export CHROME_PROFILE="Profile 1"

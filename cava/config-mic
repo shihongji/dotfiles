@@ -1,0 +1,45 @@
+## cava config — MIC input (live voice visualizer for speaking practice)
+## Separate from the default ~/.config/cava/config (which visualizes BlackHole output).
+## Launch with:  cava -p ~/.config/cava/config-mic
+
+[general]
+framerate = 60
+bars = 0
+bar_width = 2
+bar_spacing = 1
+# Voice lives roughly in this band; tightening the range makes speech more lively.
+lower_cutoff_freq = 80
+higher_cutoff_freq = 8000
+# autosens = 1 auto-boosts gain until peaks hit the top (why the bars were
+# always maxed). Turn it off and set gain manually instead.
+autosens = 0
+# Gain as a percent: 100 = neutral, lower = shorter bars. A mic with autosens
+# off usually needs well under 100 or it pins to the top. Tune live with the
+# Up/Down arrow keys, then write the value you settled on here.
+sensitivity = 300
+
+[input]
+method = portaudio
+# "auto" follows the macOS default input device — Yeti at home, built-in mic at
+# the office, whatever is set in System Settings → Sound → Input.
+source = auto
+
+[output]
+method = ncurses
+channels = mono
+
+[smoothing]
+noise_reduction = 50
+
+[color]
+# Catppuccin Mocha gradient (cool -> hot as you get louder)
+gradient = 1
+gradient_count = 8
+gradient_color_1 = '#94e2d5'  # teal
+gradient_color_2 = '#89dceb'  # sky
+gradient_color_3 = '#74c7ec'  # sapphire
+gradient_color_4 = '#89b4fa'  # blue
+gradient_color_5 = '#cba6f7'  # mauve
+gradient_color_6 = '#f5c2e7'  # pink
+gradient_color_7 = '#eba0ac'  # maroon
+gradient_color_8 = '#f38ba8'  # red

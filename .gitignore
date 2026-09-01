@@ -1,0 +1,8 @@
+.DS_Store
+*.bak
+*.bak-*
+
+# Machine-local overrides must never be committed — this is the boundary that
+# keeps work config off this repo.
+zshrc.local
+gitconfig.local

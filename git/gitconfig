@@ -1,0 +1,35 @@
+# Personal machine default identity. On a work machine, install.sh writes
+# ~/.gitconfig.local instead and that overrides the [user] block below.
+[user]
+	name = leon
+	email = shihongji21@gmail.com
+
+[push]
+	default = current
+
+[init]
+	defaultBranch = main
+
+[core]
+	autocrlf = input
+	excludesfile = ~/.config/git/ignore
+
+[pull]
+	ff = only
+
+[diff]
+	colorMoved = default
+
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+
+[http]
+	postBuffer = 524288000
+
+# Machine-local: work identity, corp host rewrites, insteadOf rules.
+# Gitignored. Keep last so it wins.
+[include]
+	path = ~/.gitconfig.local

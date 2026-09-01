@@ -1,0 +1,7 @@
+#!/usr/bin/env zsh
+if [ -n "$TMUX" ]; then
+  tmux split-window -h "nvim '$1'; tmux wait-for -S nvim-done"
+  tmux wait-for nvim-done
+else
+  nvim "$1"
+fi

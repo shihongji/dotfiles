@@ -1,0 +1,4 @@
+# ~/.zshenv — sourced for every zsh, including non-interactive.
+# Keep this minimal; it runs even for scripts and `ssh host cmd`.
+
+[ -s "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"

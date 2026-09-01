@@ -1,0 +1,5 @@
+# ~/.zprofile — login shells only.
+# PATH additions that must exist before interactive setup runs.
+
+# pipx / uv / other user-level installs
+[ -d "$HOME/.local/bin" ] && export PATH="$HOME/.local/bin:$PATH"

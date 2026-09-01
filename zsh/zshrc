@@ -1,0 +1,177 @@
+#!/usr/bin/env zsh
+# ~/.zshrc — portable core. Machine-specific bits live in ~/.zshrc.local
+# (gitignored, created by install.sh). Nothing work-related belongs in here.
+
+export COLORTERM=truecolor
+export TERM=xterm-256color
+
+# ~/.local/bin first (local builds, pipx shims), then ~/bin (own scripts).
+export PATH="$HOME/.local/bin:$PATH"
+
+# --- Homebrew prefix ---------------------------------------------------------
+# Apple Silicon installs to /opt/homebrew, Intel (and Rosetta brews) to
+# /usr/local. Resolve once and reuse — calling `brew --prefix` per source line
+# costs ~250ms of shell startup each.
+if [[ -x /opt/homebrew/bin/brew ]]; then
+  BREW_PREFIX=/opt/homebrew
+elif [[ -x /usr/local/bin/brew ]]; then
+  BREW_PREFIX=/usr/local
+fi
+if [[ -n "$BREW_PREFIX" ]]; then
+  eval "$("$BREW_PREFIX/bin/brew" shellenv)"
+fi
+
+# --- tmux auto-attach --------------------------------------------------------
+# Skip inside VSCode's integrated terminal, which manages its own panes.
+if command -v tmux &>/dev/null && [ -z "$TMUX" ] && [ "$TERM_PROGRAM" != "vscode" ]; then
+  tmux attach -t default 2>/dev/null || tmux new-session -s default
+fi
+
+# --- Editor ------------------------------------------------------------------
+# nvim-tmux-split opens files in a tmux split when inside tmux, plain nvim
+# otherwise. Note its name contains "vi", which is why bindkey -e below is
+# explicit (see the comment there).
+export PATH="$HOME/bin:$PATH"
+if [[ -x "$HOME/bin/nvim-tmux-split" ]]; then
+  export EDITOR="$HOME/bin/nvim-tmux-split"
+  export VISUAL="$HOME/bin/nvim-tmux-split"
+else
+  export EDITOR=nvim
+  export VISUAL=nvim
+fi
+
+# --- Completion --------------------------------------------------------------
+autoload -Uz compinit && compinit
+zstyle ':completion:*' menu select
+
+# --- Plugins -----------------------------------------------------------------
+for _p in zsh-autosuggestions zsh-syntax-highlighting; do
+  [[ -r "$BREW_PREFIX/share/$_p/$_p.zsh" ]] && source "$BREW_PREFIX/share/$_p/$_p.zsh"
+done
+unset _p
+
+# --- Prompt & navigation -----------------------------------------------------
+command -v zoxide   >/dev/null && eval "$(zoxide init zsh)"
+command -v starship >/dev/null && eval "$(starship init zsh)"
+
+# --- History ----------------------------------------------------------------
+HISTFILE=~/.zsh_history
+HISTSIZE=10000
+SAVEHIST=10000
+setopt APPEND_HISTORY
+setopt SHARE_HISTORY
+
+# --- Keybindings -------------------------------------------------------------
+# Use the emacs keymap explicitly. zsh otherwise infers the keymap from
+# EDITOR/VISUAL, and ours ("nvim-tmux-split") contains "vi" — which silently
+# selected viins and left ^E/^A/^K unbound (they fell through to self-insert).
+bindkey -e
+bindkey '^[[A' up-line-or-search
+bindkey '^[[B' down-line-or-search
+
+# --- Aliases -----------------------------------------------------------------
+# Modern replacements. Each is guarded so a missing tool doesn't shadow the
+# real command with a broken alias.
+command -v eza >/dev/null && {
+  alias ls='eza --icons --group-directories-first'
+  alias ll='eza -lh --icons --git'
+  alias la='eza -a --icons --group-directories-first'
+  alias lt='eza -a --tree --level=2 --icons'
+}
+command -v bat >/dev/null && alias cat='bat'
+command -v rg  >/dev/null && alias grep='rg'
+command -v fastfetch >/dev/null && alias ff='fastfetch'
+alias c='clear'
+alias v='$EDITOR'
+alias vim='$EDITOR'
+
+# git
+alias gs="git status"
+alias ga="git add"
+alias gc="git commit -m"
+alias gp="git push"
+alias gpl="git pull"
+alias gst="git stash"
+alias gsp="git stash; git pull"
+alias gfo="git fetch origin"
+alias gco="git checkout"
+alias gd="git diff"
+alias gl="git log --oneline -20"
+
+# macOS
+alias showfiles="defaults write com.apple.finder AppleShowAllFiles YES; killall Finder"
+alias hidefiles="defaults write com.apple.finder AppleShowAllFiles NO; killall Finder"
+alias cleanup="find . -name '*.DS_Store' -type f -delete"
+
+# --- fzf ---------------------------------------------------------------------
+if command -v fzf >/dev/null; then
+  source <(fzf --zsh)
+  export FZF_DEFAULT_OPTS="--height 60% --reverse --border"
+  command -v fd  >/dev/null && export FZF_DEFAULT_COMMAND='fd --type f --hidden --exclude .git'
+  command -v fd  >/dev/null && export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+  command -v bat >/dev/null && \
+    export FZF_CTRL_T_OPTS="--preview 'bat --color=always --style=numbers --line-range=:500 {}'"
+fi
+
+# Fuzzy-open a Chrome bookmark (same pattern as zoxide's `zi`: list | fzf | act).
+# CHROME_PROFILE selects which profile's bookmarks to read — set it in
+# ~/.zshrc.local if your bookmarks live somewhere other than "Default".
+bm() {
+  local profile="${CHROME_PROFILE:-Default}"
+  local file="$HOME/Library/Application Support/Google/Chrome/$profile/Bookmarks"
+  [[ -r "$file" ]] || { print -u2 "bm: no bookmarks at $file"; return 1 }
+
+  local sel
+  sel=$(jq -r '
+    def walk($path):
+      .children[]? |
+      if .type == "folder" then walk(($path + [.name]))
+      else "\($path | join("/"))\t\(.name)\t\(.url)"
+      end;
+    .roots | to_entries[] | select(.value.children?) | .value | walk([])
+  ' "$file" |
+    awk -F'\t' '{printf "%-38s %-45s\t%s\n", $2, "("$1")", $3}' |
+    fzf --height 60% --reverse --with-nth=1,2 --delimiter='\t' \
+        --query "$1" --prompt='bookmark> ') || return
+
+  [[ -n "$sel" ]] && open -a "Google Chrome" "${sel##*$'\t'}"
+}
+
+# --- Node (lazy) -------------------------------------------------------------
+# nvm's init script costs ~500ms, so load it on first use instead of at startup.
+export NVM_DIR="$HOME/.nvm"
+_load_nvm() {
+  unset -f nvm node npm npx _load_nvm
+  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+  [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+}
+nvm()  { _load_nvm; nvm  "$@"; }
+node() { _load_nvm; node "$@"; }
+npm()  { _load_nvm; npm  "$@"; }
+npx()  { _load_nvm; npx  "$@"; }
+
+# Auto-switch Node when entering a directory with a .nvmrc. Only loads nvm if
+# an .nvmrc is actually present, so the lazy-load above still applies elsewhere.
+autoload -U add-zsh-hook
+load-nvmrc() {
+  local nvmrc_path
+  nvmrc_path="$(command find . -maxdepth 1 -name .nvmrc -print -quit 2>/dev/null)"
+  [ -n "$nvmrc_path" ] || return
+  nvm use --silent 2>/dev/null
+}
+add-zsh-hook chpwd load-nvmrc
+load-nvmrc
+
+# --- bun ---------------------------------------------------------------------
+export BUN_INSTALL="$HOME/.bun"
+[ -d "$BUN_INSTALL/bin" ] && export PATH="$BUN_INSTALL/bin:$PATH"
+[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
+
+# --- voice-loop (local TTS/STT) ----------------------------------------------
+[ -r "$HOME/code/personal/voice-loop/shell/aliases.zsh" ] && \
+  source "$HOME/code/personal/voice-loop/shell/aliases.zsh"
+
+# --- Machine-local overrides -------------------------------------------------
+# Work proxies, corp certs, JAVA_HOME pins, per-machine PATH — anything that
+# must NOT be committed. Keep this last so it can override the above.
+[ -r "$HOME/.zshrc.local" ] && source "$HOME/.zshrc.local"
