@@ -128,7 +128,32 @@ if [ "$DO_REPOS" = 1 ]; then
   fi
 fi
 
-# --- 5. what's left to do by hand -------------------------------------------
+# --- 5. verify ---------------------------------------------------------------
+if [ "$DRY_RUN" = 0 ]; then
+  say "Verifying"
+  missing=()
+  for t in rg fd bat eza jq fzf zoxide starship tmux nvim git mpv yt-dlp; do
+    command -v "$t" >/dev/null 2>&1 || missing+=("$t")
+  done
+  if [ ${#missing[@]} -gt 0 ]; then
+    warn "not on PATH: ${missing[*]}"
+    warn "(open a new shell first; if still missing, re-run: brew bundle --file=Brewfile)"
+  else
+    echo "    all CLI tools present"
+  fi
+
+  # The terminal font is a hard requirement for the prompt/icons, so check it
+  # here rather than letting it show up later as unexplained tofu glyphs.
+  if ls "$HOME/Library/Fonts" /Library/Fonts 2>/dev/null \
+       | grep -qi "JetBrainsMonoNerdFont"; then
+    echo "    JetBrainsMono Nerd Font installed"
+  else
+    warn "JetBrainsMono Nerd Font NOT found — the prompt will show tofu glyphs."
+    warn "  brew install --cask font-jetbrains-mono-nerd-font   (see FONTS.md)"
+  fi
+fi
+
+# --- 6. what's left to do by hand -------------------------------------------
 cat <<'EOF'
 
 Done. Remaining manual steps:
@@ -147,7 +172,9 @@ Done. Remaining manual steps:
    Its Claude Code hooks are already in claude/settings.json.
 
 3) Open a new terminal, then check: rg, fd, bat, eza, fzf, starship, zoxide.
+   Streaming check:  mpv "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
 
-4) Ghostty: the config expects JetBrainsMono Nerd Font (installed via Brewfile).
-   Restart Ghostty after the font lands or you'll get fallback glyphs.
+4) Ghostty: FULLY QUIT and reopen it (not just the window) so JetBrainsMono
+   Nerd Font is picked up. Tofu/□ glyphs in the prompt mean the font didn't
+   load — see FONTS.md.
 EOF

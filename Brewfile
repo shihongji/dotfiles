@@ -44,8 +44,15 @@ brew "markdown-oxide"        # markdown LSP (used by the nvim config)
 brew "ffmpeg"
 brew "whisper-cpp"           # CPU build; see voice-loop docs for a Metal build
 brew "cava"                  # audio visualizer for the dashboard
-brew "mpv"
 brew "koekeishiya/formulae/skhd"   # global hotkeys (Alt+C stop, Alt+S skip)
+
+# --- media -------------------------------------------------------------------
+brew "mpv"
+# yt-dlp is what lets mpv play a YouTube/streaming URL directly:
+#   mpv "https://youtube.com/watch?v=..."
+# It currently arrives as an mpv dependency, so it is pinned explicitly here —
+# if mpv ever drops the dep, streaming would break silently otherwise.
+brew "yt-dlp"
 
 # --- misc --------------------------------------------------------------------
 brew "fastfetch"
@@ -56,7 +63,11 @@ brew "wallpaper"
 
 # --- casks -------------------------------------------------------------------
 cask "ghostty"
-cask "font-jetbrains-mono-nerd-font"   # the Ghostty font — required
+
+# Fonts — see FONTS.md. JetBrainsMono NF is REQUIRED: it is the Ghostty font,
+# and starship / eza / tmux depend on its Nerd Font glyphs. The other two are
+# leftovers, safe to delete.
+cask "font-jetbrains-mono-nerd-font"
 cask "font-hack-nerd-font"
 cask "font-meslo-lg-nerd-font"
 cask "visual-studio-code"

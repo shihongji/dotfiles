@@ -1,4 +1,10 @@
-# Font
+# Font — see FONTS.md for download links and variant notes.
+# MUST be a Nerd Font: starship, `eza --icons` and the tmux status bar all draw
+# powerline/icon glyphs that plain JetBrains Mono lacks (they render as tofu).
+#   brew install --cask font-jetbrains-mono-nerd-font
+# Family name is exact: no space inside "JetBrainsMono", space before "Nerd Font".
+# Ghostty falls back silently on a typo, so tofu glyphs => check this line first.
+# This is the single source of truth — nvim/tmux/starship inherit it.
 font-family = JetBrainsMono Nerd Font
 font-size = 15
 
