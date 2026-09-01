@@ -5,8 +5,11 @@ Code, and the local voice loop. Contains nothing employer-specific.
 
 ## Install on a new Mac
 
+Clone over **HTTPS** — a fresh Mac has no SSH key yet, and this repo is public,
+so this works before any auth is set up:
+
 ```bash
-git clone git@github.com:shihongji/dotfiles.git ~/code/personal/dotfiles
+git clone https://github.com/shihongji/dotfiles.git ~/code/personal/dotfiles
 cd ~/code/personal/dotfiles
 ./install.sh
 ```
@@ -14,6 +17,17 @@ cd ~/code/personal/dotfiles
 `./install.sh --dry-run` to preview, `--link` for symlinks only (no brew).
 Re-running is safe: existing real files are backed up to `<name>.bak-<ts>`
 before being replaced by a symlink.
+
+Once you've set up an SSH key (step 1 of the installer's closing notes), switch
+the remote so you can push:
+
+```bash
+git remote set-url origin git@github.com:shihongji/dotfiles.git
+```
+
+> **This repo is public.** Nothing employer-specific, and no secrets, belong in
+> it — machine-local files (`~/.zshrc.local`, `~/.gitconfig.local`) are
+> gitignored precisely so that boundary is impossible to cross by accident.
 
 ## Layout
 
@@ -71,9 +85,13 @@ once their remotes are set at the bottom of the script:
 
 | Repo | Lands at | Status |
 |---|---|---|
-| `nvim-config` | `~/.config/nvim` | remote set ✅ |
+| `nvim-config` | `~/.config/nvim` | remote set ✅ (private — needs SSH auth) |
 | `tmux-config` | `~/code/personal/tmux-config`, symlinked to `~/.config/tmux` | **remote TODO** |
 | `voice-loop` | `~/code/personal/voice-loop` | **remote TODO** |
+
+These are private, so cloning them needs an SSH key. A clone failure is
+non-fatal — the rest of the install still completes; just re-run `./install.sh`
+after `gh auth login` and it picks up whatever is missing.
 
 ## Voice loop (TTS / STT)
 

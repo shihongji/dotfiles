@@ -100,13 +100,22 @@ fi
 # versioned. Set the remotes once and this clones them for you.
 if [ "$DO_REPOS" = 1 ]; then
   say "Sibling repos"
+  # A clone failure here must not abort the install (set -e): these repos are
+  # private, so a machine without a key yet will fail this step and still want
+  # the rest of the setup. Re-running after `gh auth login` picks them up.
   clone_or_report() {  # $1 = url ("" if unset), $2 = dest, $3 = label
-    if [ -z "$1" ]; then warn "$3: no remote set yet — clone manually into $2"; return; fi
-    if [ -d "$2/.git" ]; then echo "    ok   $2"; return; fi
-    run git clone "$1" "$2"
+    if [ -z "$1" ]; then warn "$3: no remote set yet — clone manually into $2"; return 0; fi
+    if [ -d "$2/.git" ]; then echo "    ok   $2"; return 0; fi
+    if ! run git clone "$1" "$2"; then
+      warn "$3: clone failed (private repo — set up SSH auth, then re-run ./install.sh)"
+    fi
+    return 0
   }
   mkdir -p "$HOME/.config" "$HOME/code/personal"
 
+  # nvim-config is PRIVATE, so this clone needs auth either way — do step 1 of
+  # the closing notes (ssh-keygen + gh auth login) first, or re-run just this
+  # part later with `./install.sh` again (cloning is skipped if already there).
   NVIM_REMOTE="git@github.com:shihongji/nvim-config.git"
   TMUX_REMOTE=""        # TODO: set once the repo exists
   VOICELOOP_REMOTE=""   # TODO: set once the repo exists
