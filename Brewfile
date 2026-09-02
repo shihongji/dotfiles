@@ -99,6 +99,16 @@ cask "google-chrome"
 cask "raycast"               # launcher / clipboard history / window mgmt
 cask "spotify"
 cask "readest"               # EPUB reader, syncs across devices
+cask "obsidian"              # notes; per-vault settings live in .obsidian/
+cask "typora"                # single-document markdown editor (paid, ~$15)
+
+# --- containers --------------------------------------------------------------
+# OrbStack over Docker Desktop: same `docker` CLI and compose, but far lighter
+# on CPU/battery and much faster to start. Free for personal use, whereas
+# Docker Desktop now requires a paid subscription for larger companies —
+# irrelevant on a personal Mac, but OrbStack is simply the better tool here.
+# Swap for `cask "docker-desktop"` if you need its GUI/extensions.
+cask "orbstack"
 
 # boring-notch (notch → media/HUD widget) is NOT in homebrew-cask; it only
 # exists in the author's tap, so brew will ask you to trust it. Declared last
