@@ -86,3 +86,21 @@ cask "font-meslo-lg-nerd-font"
 cask "visual-studio-code"
 cask "background-music"
 cask "blackhole-2ch"         # loopback audio device (voice-loop / cava)
+
+# --- browsers ----------------------------------------------------------------
+# Firefox is the daily driver: Chrome's Manifest V3 dropped the blocking
+# webRequest API, so uBlock Origin only runs in reduced "Lite" form there.
+# Firefox keeps the full version. Chrome stays for devtools, sites that only
+# certify Chrome, and because the `bm` function reads its bookmarks JSON.
+cask "firefox"
+cask "google-chrome"
+
+# --- apps --------------------------------------------------------------------
+cask "spotify"
+cask "readest"               # EPUB reader, syncs across devices
+
+# boring-notch (notch → media/HUD widget) is NOT in homebrew-cask; it only
+# exists in the author's tap, so brew will ask you to trust it. Declared last
+# because a declined trust prompt should not hold up anything above.
+tap "theboredteam/boring-notch"
+cask "theboredteam/boring-notch/boring-notch"
