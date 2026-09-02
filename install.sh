@@ -211,14 +211,18 @@ Done. Remaining manual steps:
    To push these repos, switch each remote to SSH:
      git -C <dir> remote set-url origin git@github.com:shihongji/<repo>.git
 
-3) bing-wallpaper — daily Bing UHD desktop image (optional):
+3) Language toolchains — Java, Scala, Python, Rust, Node, Claude Code:
+     ./install-toolchains.sh
+   Separate from this script because none of them come from Homebrew.
+
+4) bing-wallpaper — daily Bing UHD desktop image (optional):
      cd ~/code/personal/bing-wallpaper && ./install-agent.sh --now
    Builds the JAR, schedules a 06:00 refresh, and sets one right away.
 
-4) Open a new terminal, then check: rg, fd, bat, eza, fzf, starship, zoxide.
+5) Open a new terminal, then check: rg, fd, bat, eza, fzf, starship, zoxide.
    Streaming check:  mpv "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
 
-5) Ghostty: FULLY QUIT and reopen it (not just the window) so JetBrainsMono
+6) Ghostty: FULLY QUIT and reopen it (not just the window) so JetBrainsMono
    Nerd Font is picked up. Tofu/□ glyphs in the prompt mean the font didn't
    load — see FONTS.md.
 EOF

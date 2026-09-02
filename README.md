@@ -94,6 +94,30 @@ These are private, so cloning them needs an SSH key. A clone failure is
 non-fatal — the rest of the install still completes; just re-run `./install.sh`
 after `gh auth login` and it picks up whatever is missing.
 
+## Language toolchains
+
+`./install-toolchains.sh` — Java, Scala, Python, Rust, Node, and Claude Code.
+Run it after `install.sh`. Safe to re-run; pass names to do a subset:
+
+```bash
+./install-toolchains.sh              # everything
+./install-toolchains.sh rust node    # just those
+```
+
+Separate from `install.sh` because **none of these come from Homebrew** — each
+ships its own installer and version manager:
+
+| | Installed via | Why not brew |
+|---|---|---|
+| Java | `--cask temurin` | full JDK registered with `java_home`; the Brewfile's `openjdk` only runs JARs |
+| Scala | `coursier` + `cs setup` | pulls scala, sbt, scalafmt, bloop, metals together |
+| Python | `uv` + `pipx` | uv for venvs/projects, pipx for global CLIs; system python3 untouched |
+| Rust | `rustup` | brew's rust is one pinned version with no toolchain management |
+| Node | `nvm` + `bun` | zshrc lazy-loads nvm and auto-switches on `.nvmrc` |
+| Claude Code | native installer | lives in `~/.local/share/claude`, self-updating |
+
+Rust also gets `rust-analyzer`, `clippy`, `rustfmt` and `rust-src` for the nvim LSP.
+
 ## Bing wallpaper
 
 A Scala util that fetches Bing's daily UHD homepage image and sets it as the
