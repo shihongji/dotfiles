@@ -78,6 +78,29 @@ personal and a work machine:
 
 **Anything employer-specific goes in these two files, never in the repo.**
 
+### If `git pull` complains about local changes
+
+Installers that append to shell profiles (`gh auth setup-git`, bun, some
+language installers) write into files that are symlinks into this repo, so
+their edits show up as uncommitted changes here. Check what it is:
+
+```bash
+git diff zsh/zshrc git/gitconfig
+```
+
+- **Duplicate `source` lines** (voice-loop, bun) — already in `zsh/zshrc`;
+  discard them: `git checkout -- zsh/zshrc`
+- **A git credential helper** from `gh auth setup-git` — real, but it belongs
+  in the untracked local file. Discard it here and re-add it there:
+
+  ```bash
+  git checkout -- git/gitconfig
+  GIT_CONFIG_GLOBAL=~/.gitconfig.local gh auth setup-git
+  ```
+
+`~/.gitconfig.local` is gitignored and included last, so it wins and never
+dirties the repo.
+
 ## Sibling repos
 
 Kept separate so they stay independently versioned. `install.sh` clones them
