@@ -60,19 +60,30 @@ if want scala; then
   # formula and brew then refuses it as untrusted. The launcher sidesteps all
   # of that — no tap, no trust prompt.
   if ! have cs; then
-    if ! brew install coursier 2>/dev/null; then
+    # Try brew, but decide by OUTCOME, not exit code: brew can exit 0 and still
+    # leave no callable `cs` (unlinked, keg-only, or a shadowing tap), in which
+    # case we must still fall back.
+    brew install coursier >/dev/null 2>&1 || true
+    have cs || [ -x "$HOME/.local/bin/cs" ] || {
       warn "brew coursier unavailable — using the standalone launcher"
       mkdir -p "$HOME/.local/bin"
       arch_sfx="$( [ "$(uname -m)" = "arm64" ] && echo aarch64 || echo x86_64 )-apple-darwin"
-      if curl -fsSL "https://github.com/coursier/launchers/raw/master/cs-$arch_sfx.gz" \
-           | gunzip > "$HOME/.local/bin/cs" 2>/dev/null; then
+      url="https://github.com/coursier/launchers/raw/master/cs-$arch_sfx.gz"
+      if curl -fsSL "$url" | gunzip > "$HOME/.local/bin/cs" 2>/dev/null \
+         && [ -s "$HOME/.local/bin/cs" ]; then
         chmod +x "$HOME/.local/bin/cs"
-        export PATH="$HOME/.local/bin:$PATH"
+        echo "    installed $HOME/.local/bin/cs"
       else
-        warn "could not fetch the coursier launcher — install Scala manually"
+        rm -f "$HOME/.local/bin/cs"
+        warn "could not fetch the coursier launcher from $url"
       fi
-    fi
+    }
+    # Make cs callable for the rest of THIS script regardless of where it came
+    # from — ~/.local/bin may not be on PATH in the shell that ran us.
+    [ -x "$HOME/.local/bin/cs" ] && export PATH="$HOME/.local/bin:$PATH"
   fi
+
+  have cs || warn "still no 'cs' on PATH — Scala toolchain cannot be installed"
   # Gate on scala-cli specifically, not on coursier's mere presence — coursier
   # can be installed while the toolchain it manages is not.
   if have scala-cli; then
