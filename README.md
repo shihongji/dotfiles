@@ -85,13 +85,27 @@ once their remotes are set at the bottom of the script:
 
 | Repo | Lands at | Status |
 |---|---|---|
-| `nvim-config` | `~/.config/nvim` | remote set ✅ (private — needs SSH auth) |
-| `tmux-config` | `~/code/personal/tmux-config`, symlinked to `~/.config/tmux` | **remote TODO** |
-| `voice-loop` | `~/code/personal/voice-loop` | **remote TODO** |
+| `nvim-config` | `~/.config/nvim` | private — needs SSH auth |
+| `tmux-config` | `~/code/personal/tmux-config`, symlinked to `~/.config/tmux` | public ✅ |
+| `voice-loop` | `~/code/personal/voice-loop` | public ✅ |
+| `bing-wallpaper` | `~/code/personal/bing-wallpaper` | public ✅ |
 
 These are private, so cloning them needs an SSH key. A clone failure is
 non-fatal — the rest of the install still completes; just re-run `./install.sh`
 after `gh auth login` and it picks up whatever is missing.
+
+## Bing wallpaper
+
+A Scala util that fetches Bing's daily UHD homepage image and sets it as the
+desktop across all screens. Own repo, own installer:
+
+```bash
+cd ~/code/personal/bing-wallpaper && ./install-agent.sh --now
+```
+
+That builds the JAR and registers a launchd agent for a 06:00 daily refresh.
+Needs `wallpaper` + `openjdk` (both in the Brewfile); `scala-cli` only to build
+from source.
 
 ## Voice loop (TTS / STT)
 
