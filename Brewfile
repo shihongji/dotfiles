@@ -96,6 +96,7 @@ cask "firefox"
 cask "google-chrome"
 
 # --- apps --------------------------------------------------------------------
+cask "raycast"               # launcher / clipboard history / window mgmt
 cask "spotify"
 cask "readest"               # EPUB reader, syncs across devices
 

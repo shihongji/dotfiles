@@ -117,6 +117,25 @@ These are private, so cloning them needs an SSH key. A clone failure is
 non-fatal — the rest of the install still completes; just re-run `./install.sh`
 after `gh auth login` and it picks up whatever is missing.
 
+## Raycast
+
+Installed by the Brewfile. Its settings are **not** in this repo, on purpose:
+they live in `~/Library/Preferences/com.raycast.macos.plist` (a binary plist of
+mutable app state — analytics timestamps, migration flags, window positions),
+and `~/.config/raycast/` is just compiled extension bundles Raycast rebuilds
+itself. Neither is meaningful to version-control or diff.
+
+Carry settings over with Raycast's own export, which is what it is designed for:
+
+**Old Mac** — Raycast → Settings → Advanced → *Export Settings & Data*
+(hotkeys, aliases, quicklinks, snippets, extension list and their prefs).
+**New Mac** — install Raycast, then Settings → Advanced → *Import*.
+
+Raycast Pro syncs this automatically across machines; the export is the free path.
+
+Only carry over the extensions you actually want — a work machine's list tends
+to accumulate company-specific ones.
+
 ## Language toolchains
 
 `./install-toolchains.sh` — Java, Scala, Python, Rust, Node, and Claude Code.
