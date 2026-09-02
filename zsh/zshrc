@@ -8,6 +8,11 @@ export TERM=xterm-256color
 # ~/.local/bin first (local builds, pipx shims), then ~/bin (own scripts).
 export PATH="$HOME/.local/bin:$PATH"
 
+# Scala toolchain. `cs setup` installs scala, scala-cli, sbt, scalafmt, metals
+# and bloop here — none of them are on PATH without this line.
+[ -d "$HOME/Library/Application Support/Coursier/bin" ] && \
+  export PATH="$HOME/Library/Application Support/Coursier/bin:$PATH"
+
 # --- Homebrew prefix ---------------------------------------------------------
 # Apple Silicon installs to /opt/homebrew, Intel (and Rosetta brews) to
 # /usr/local. Resolve once and reuse — calling `brew --prefix` per source line

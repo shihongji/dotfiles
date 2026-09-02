@@ -78,7 +78,27 @@ if want scala; then
   if have scala-cli; then
     echo "    scala-cli: $(scala-cli version --cli 2>/dev/null | head -1)"
   elif have cs; then
+    # `cs setup --yes` also appends its bin dir to the shell profiles. Ours are
+    # symlinks into this repo and zshrc already puts $CS_BIN on PATH, so that
+    # edit would only dirty the tracked file with a duplicate line. Snapshot
+    # the profiles, let setup do the installs, then put them back.
+    _snap=$(mktemp -d)
+    for p in .zprofile .profile .bash_profile; do
+      [ -f "$HOME/$p" ] && cp -p "$HOME/$p" "$_snap/$p" 2>/dev/null || true
+    done
+
     cs setup --yes || warn "cs setup failed"
+
+    for p in .zprofile .profile .bash_profile; do
+      if [ -f "$_snap/$p" ]; then
+        cmp -s "$_snap/$p" "$HOME/$p" || {
+          cp -p "$_snap/$p" "$HOME/$p"
+          echo "    (reverted cs's PATH edit to ~/$p — zshrc handles it)"
+        }
+      fi
+    done
+    rm -rf "$_snap"
+
     [ -x "$CS_BIN/scala-cli" ] && export PATH="$CS_BIN:$PATH"
   fi
 
