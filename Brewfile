@@ -101,6 +101,14 @@ cask "spotify"
 cask "readest"               # EPUB reader, syncs across devices
 cask "obsidian"              # notes; per-vault settings live in .obsidian/
 cask "typora"                # single-document markdown editor (paid, ~$15)
+cask "calibre"               # ebook library + format conversion
+
+# Syncthing — PERSONAL MACHINES ONLY. Peer-to-peer file sync with no cloud
+# middleman. Deliberately never installed on a work laptop: it would open a
+# sync path between corporate and personal devices.
+# It is a formula, not a cask (the cask was discontinued). Start it with:
+#   brew services start syncthing     # then http://127.0.0.1:8384
+brew "syncthing"
 
 # --- containers --------------------------------------------------------------
 # OrbStack over Docker Desktop: same `docker` CLI and compose, but far lighter

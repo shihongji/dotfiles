@@ -117,6 +117,21 @@ These are private, so cloning them needs an SSH key. A clone failure is
 non-fatal — the rest of the install still completes; just re-run `./install.sh`
 after `gh auth login` and it picks up whatever is missing.
 
+## Syncthing — personal machines only
+
+Peer-to-peer file sync, no cloud in the middle. **Never install it on a work
+laptop**: it would open a sync path between corporate and personal devices.
+
+It is a formula (the cask was discontinued), and runs as a background service:
+
+```bash
+brew services start syncthing     # UI at http://127.0.0.1:8384
+```
+
+Pair devices by exchanging device IDs in that UI; there is no account. If you
+ever run this repo's Brewfile on a work machine, delete the `syncthing` line
+first.
+
 ## Raycast
 
 Installed by the Brewfile. Its settings are **not** in this repo, on purpose:
