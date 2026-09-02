@@ -4,12 +4,10 @@
 # (awscli, kubernetes-cli, maven, sbt, postgresql@15, golangci-lint, hurl,
 # posting, gemini-cli — reinstall individually if you actually want them).
 
-# Third-party taps. brew asks you to trust each one the first time; both are
-# well-known upstreams (skhd/yabai author, and the Scala CLI team). Neither is
-# essential: skhd only adds voice-loop's global hotkeys, scala-cli only builds
-# bing-wallpaper from source.
+# One third-party tap. brew asks you to trust it the first time (it is the
+# skhd/yabai author's). Optional — skhd only adds voice-loop's global hotkeys;
+# decline it and everything else still installs.
 tap "koekeishiya/formulae"   # skhd, for voice-loop's global hotkeys
-tap "virtuslab/scala-cli"    # scala-cli, to build bing-wallpaper's JAR
 
 # --- shell -------------------------------------------------------------------
 brew "zsh-autosuggestions"
@@ -61,15 +59,14 @@ brew "yt-dlp"
 
 # --- bing-wallpaper ----------------------------------------------------------
 # Daily Bing UHD desktop image. `wallpaper` is the CLI that actually sets the
-# desktop on macOS 14+; openjdk runs the packaged JAR. scala-cli is only needed
-# to BUILD the JAR from source (or download it from the repo's Releases).
+# desktop on macOS 14+; openjdk runs the packaged JAR.
 #
-# scala-cli comes from a third-party tap, so brew will ask you to trust it
-# (same prompt as skhd). It is OPTIONAL: you only need it to build the JAR
-# yourself. Skip it and download bing-wallpaper.jar from the repo's Releases.
+# scala-cli (needed only to BUILD the JAR from source) is deliberately NOT here:
+# its formula is in an untrusted third-party tap that `brew bundle` refuses
+# without an explicit `brew trust`, which made this line fail every time.
+# install-toolchains.sh installs it via coursier instead — no tap required.
 brew "wallpaper"
 brew "openjdk"
-brew "virtuslab/scala-cli/scala-cli"
 
 # --- misc --------------------------------------------------------------------
 brew "fastfetch"

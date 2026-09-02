@@ -43,21 +43,52 @@ if want java; then
 fi
 
 # --- Scala -------------------------------------------------------------------
-# Coursier is the Scala toolchain manager; `cs setup` installs scala, scalac,
-# sbt, scalafmt, ammonite, bloop and metals in one go.
+# Coursier is the Scala toolchain manager: `cs setup` installs scala, scalac,
+# scala-cli, sbt, scalafmt, ammonite, bloop and metals into
+# ~/Library/Application Support/Coursier/bin.
+#
+# This is the reason scala-cli is NOT required from Homebrew: its formula lives
+# in an untrusted third-party tap that `brew bundle` refuses without an explicit
+# `brew trust`. Coursier needs no tap and brings the whole toolchain with it.
 if want scala; then
   say "Scala"
-  if have cs || have coursier; then
-    echo "    coursier already installed"
-  else
-    brew install coursier || warn "coursier install failed"
+  CS_BIN="$HOME/Library/Application Support/Coursier/bin"
+
+  # Getting `cs` itself: prefer homebrew-core's coursier, but fall back to the
+  # official standalone launcher. Homebrew has BOTH a core coursier and a
+  # coursier/formulas tap; if that tap is ever installed it shadows the core
+  # formula and brew then refuses it as untrusted. The launcher sidesteps all
+  # of that — no tap, no trust prompt.
+  if ! have cs; then
+    if ! brew install coursier 2>/dev/null; then
+      warn "brew coursier unavailable — using the standalone launcher"
+      mkdir -p "$HOME/.local/bin"
+      arch_sfx="$( [ "$(uname -m)" = "arm64" ] && echo aarch64 || echo x86_64 )-apple-darwin"
+      if curl -fsSL "https://github.com/coursier/launchers/raw/master/cs-$arch_sfx.gz" \
+           | gunzip > "$HOME/.local/bin/cs" 2>/dev/null; then
+        chmod +x "$HOME/.local/bin/cs"
+        export PATH="$HOME/.local/bin:$PATH"
+      else
+        warn "could not fetch the coursier launcher — install Scala manually"
+      fi
+    fi
   fi
-  if have cs && [ ! -x "$HOME/Library/Application Support/Coursier/bin/scala" ]; then
+  # Gate on scala-cli specifically, not on coursier's mere presence — coursier
+  # can be installed while the toolchain it manages is not.
+  if have scala-cli; then
+    echo "    scala-cli: $(scala-cli version --cli 2>/dev/null | head -1)"
+  elif have cs; then
     cs setup --yes || warn "cs setup failed"
-  else
-    echo "    scala toolchain present"
+    [ -x "$CS_BIN/scala-cli" ] && export PATH="$CS_BIN:$PATH"
   fi
-  have sbt || brew install sbt || warn "sbt install failed"
+
+  if ! have scala-cli && [ ! -x "$CS_BIN/scala-cli" ]; then
+    warn "scala-cli still missing. Either:"
+    warn "  cs setup --yes                       # via coursier (no tap needed)"
+    warn "  brew trust virtuslab/scala-cli && brew install virtuslab/scala-cli/scala-cli"
+  fi
+
+  have sbt || [ -x "$CS_BIN/sbt" ] || brew install sbt || warn "sbt install failed"
 fi
 
 # --- Python ------------------------------------------------------------------
